@@ -1,0 +1,4 @@
+node_modules/
+dist/
+qa-artifacts/
+.DS_Store
