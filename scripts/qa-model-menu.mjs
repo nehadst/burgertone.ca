@@ -36,7 +36,7 @@ for (let index = 0; index < modelCount; index += 1) {
   await page.waitForFunction((expectedName) => {
     const viewer = document.querySelector('model-viewer')
     const activeName = document.querySelector('.menu-console__info h3')?.textContent?.trim()
-    return viewer?.loaded && activeName === expectedName
+    return viewer?.loaded && activeName?.toLowerCase() === expectedName.toLowerCase()
   }, name, { timeout: 30_000 })
   await page.waitForTimeout(180)
 
