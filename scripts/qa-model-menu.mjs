@@ -11,7 +11,9 @@ const browser = await chromium.launch({ headless: true, executablePath })
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 })
 const errors = []
 
-page.on('console', (message) => message.type() === 'error' && errors.push(`console: ${message.text()}`))
+page.on('console', (message) => {
+  if (message.type() === 'error' && !message.text().includes('Failed to load resource: net::ERR_FAILED')) errors.push(`console: ${message.text()}`)
+})
 page.on('pageerror', (error) => errors.push(`page: ${error.message}`))
 await page.route(/\.mp4(?:\?|$)/, (route) => route.abort())
 
@@ -33,12 +35,13 @@ for (let index = 0; index < modelCount; index += 1) {
   await page.locator('#interactive-model').scrollIntoViewIfNeeded()
   await page.waitForFunction((expectedName) => {
     const viewer = document.querySelector('model-viewer')
-    return viewer?.loaded && viewer.alt.includes(expectedName)
+    const activeName = document.querySelector('.menu-console__info h3')?.textContent?.trim()
+    return viewer?.loaded && activeName === expectedName
   }, name, { timeout: 30_000 })
   await page.waitForTimeout(180)
 
   const state = await page.locator('model-viewer').evaluate((viewer) => ({
-    alt: viewer.alt,
+    alt: viewer.getAttribute('alt') || viewer.alt,
     loaded: viewer.loaded,
     visible: viewer.modelIsVisible,
     src: viewer.getAttribute('src'),
