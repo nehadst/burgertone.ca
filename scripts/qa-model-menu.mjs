@@ -16,9 +16,11 @@ page.on('pageerror', (error) => errors.push(`page: ${error.message}`))
 await page.route(/\.mp4(?:\?|$)/, (route) => route.abort())
 
 await page.goto(baseURL, { waitUntil: 'domcontentloaded' })
+console.log(`Loaded ${baseURL}`)
 await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto' })
 await page.locator('#interactive-model').scrollIntoViewIfNeeded()
 await page.waitForFunction(() => customElements.get('model-viewer'))
+console.log('3D player registered')
 
 const buttons = page.locator('.model-tracks button')
 const modelCount = await buttons.count()
@@ -46,6 +48,7 @@ for (let index = 0; index < modelCount; index += 1) {
   const path = `${outputDirectory}/${String(index + 1).padStart(2, '0')}-${slug}.png`
   await page.locator('#interactive-model').screenshot({ path })
   models.push({ name, path, ...state })
+  console.log(`Rendered ${index + 1}/${modelCount}: ${name}`)
 }
 
 await buttons.first().click()

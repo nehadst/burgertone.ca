@@ -3,6 +3,7 @@ export const ORDER_URL = 'https://burgertone.orderingclub.com/en/burgertone?menu
 export const NAV_ITEMS = [
   ['Home', 'home'],
   ['Our Burgers', 'burgers'],
+  ['Tracks', 'tracks'],
   ['Menu', 'menu'],
   ['Our Story', 'story'],
   ['Location', 'location'],

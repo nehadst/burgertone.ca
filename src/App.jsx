@@ -509,7 +509,7 @@ function InteractiveModel({ item }) {
 
 function MenuArchive() {
   return (
-    <div className="menu-archive" aria-labelledby="full-menu-title">
+    <section className="menu-archive" id="menu" aria-labelledby="full-menu-title">
       <header className="menu-archive__head">
         <div><p className="eyebrow">Every track / No hidden details</p><h3 id="full-menu-title">The full setlist.</h3></div>
         <p>Everything stays readable here—no animation required. Order online for current customization and availability.</p>
@@ -530,7 +530,7 @@ function MenuArchive() {
         ))}
       </div>
       <div className="menu-archive__cta"><p>Ready to build your order?</p><OrderLink>Customize & order</OrderLink></div>
-    </div>
+    </section>
   )
 }
 
@@ -554,12 +554,12 @@ function MenuExperience() {
   }
 
   return (
-    <section className="menu-experience" id="menu" aria-labelledby="menu-title">
+    <section className="menu-experience" id="tracks" aria-labelledby="tracks-title">
       <div className="container">
         <header className="menu-experience__head">
           <div>
             <p className="eyebrow">Interactive menu / 14 playable tracks</p>
-            <h2 id="menu-title">Choose a track.<br /><em>Spin the plate.</em></h2>
+            <h2 id="tracks-title">Choose a track.<br /><em>Spin the plate.</em></h2>
           </div>
           <div className="menu-experience__intro">
             <p>Every model below came from the real Burgertone product. Pick a dish, then drag it around to inspect it from every angle.</p>
@@ -622,8 +622,8 @@ function Story() {
         <div className="brand-story__copy">
           <p className="eyebrow">Track 03 / Our story</p>
           <h2 id="story-title">Good food.<br /><em>Good music.</em></h2>
-          <p>Burgertone was born from a love for both. Years of passion came together in smash burgers, cheesesteaks, hot dogs and refreshing shakes—all served with the grooviest of tunes.</p>
-          <p>Our beef is halal and ground daily. Our fries are freshly hand-cut. Our one-of-a-kind ToneSauce ties it all together.</p>
+          <p>Burgertone was born out of a love for both good food and good music. Years of passion and love of food came together in hamburgers, smash burgers, cheesesteaks, hot dogs and refreshing shakes—all served with the grooviest of tunes.</p>
+          <p>Our fries are freshly hand-cut, our beef is halal and ground every day, and our in-house, one-of-a-kind ToneSauce ties it all together.</p>
           <a className="text-link" href="#location">Come orchestrate your burger <ArrowIcon /></a>
         </div>
         <div className="brand-story__visual">
@@ -688,7 +688,7 @@ function Footer() {
       <div className="container">
         <div className="footer__top"><BrandMark light /><OrderLink>Turn up the flavour</OrderLink></div>
         <div className="footer__bottom">
-          <div>{NAV_ITEMS.slice(0, 5).map(([label, id]) => <a key={id} href={`#${id}`}>{label}</a>)}</div>
+          <div>{NAV_ITEMS.map(([label, id]) => <a key={id} href={`#${id}`}>{label}</a>)}</div>
           <p>Burlington open · Toronto coming soon</p>
           <p>© {new Date().getFullYear()} Burgertone</p>
         </div>

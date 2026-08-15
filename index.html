@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Burgertone | Smash Burgers, Shakes & Good Music in Burlington</title>
-    <meta name="description" content="Fresh Angus halal smash burgers, hand-cut fries, cheesesteaks and signature shakes at Burgertone in Burlington, Ontario." />
+    <title>Burgertone | Burlington Smash Burgers · Toronto Coming Soon</title>
+    <meta name="description" content="Fresh Angus halal smash burgers, hand-cut fries, cheesesteaks and signature shakes at Burgertone in Burlington, with a new Toronto location coming soon." />
     <meta name="theme-color" content="#0b0a09" />
     <meta property="og:type" content="restaurant.restaurant" />
     <meta property="og:title" content="Burgertone — Turn Up the Flavour" />
-    <meta property="og:description" content="Burgers with a beat. Visit Burgertone in Burlington or order online." />
+    <meta property="og:description" content="Burgers with a beat. Burlington is open and Burgertone Toronto is coming soon to Mt Pleasant Road." />
     <meta property="og:url" content="https://burgertone.com/" />
     <meta property="og:image" content="https://burgertone.com/assets/classic.jpg" />
     <meta property="og:image:alt" content="A Burgertone smash burger served with fresh-cut fries" />
@@ -20,27 +20,52 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Restaurant",
-        "name": "Burgertone",
-        "url": "https://burgertone.com/",
-        "image": "https://burgertone.com/assets/classic.jpg",
-        "telephone": "+1-289-313-8225",
-        "email": "info@burgertone.com",
-        "servesCuisine": ["Burgers", "American", "Halal"],
-        "priceRange": "$",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "2025 Upper Middle Road",
-          "addressLocality": "Burlington",
-          "addressRegion": "ON",
-          "postalCode": "L7P 4K1",
-          "addressCountry": "CA"
-        },
-        "openingHoursSpecification": [
-          { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday"], "opens": "11:00", "closes": "21:00" },
-          { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Thursday", "Friday", "Saturday", "Sunday"], "opens": "11:00", "closes": "22:00" }
-        ],
-        "sameAs": ["https://www.instagram.com/burgertone.ca/", "https://www.facebook.com/burgertone.ca/"]
+        "@graph": [
+          {
+            "@type": "Restaurant",
+            "@id": "https://burgertone.com/#burlington",
+            "name": "Burgertone Burlington",
+            "url": "https://burgertone.com/#location",
+            "image": "https://burgertone.com/assets/classic.jpg",
+            "telephone": "+1-289-313-8225",
+            "email": "info@burgertone.com",
+            "servesCuisine": ["Burgers", "American", "Halal"],
+            "priceRange": "$",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "2025 Upper Middle Road",
+              "addressLocality": "Burlington",
+              "addressRegion": "ON",
+              "postalCode": "L7P 4K1",
+              "addressCountry": "CA"
+            },
+            "openingHoursSpecification": [
+              { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday"], "opens": "11:00", "closes": "21:00" },
+              { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Thursday", "Friday", "Saturday", "Sunday"], "opens": "11:00", "closes": "22:00" }
+            ],
+            "sameAs": ["https://www.instagram.com/burgertone.ca/", "https://www.facebook.com/burgertone.ca/"]
+          },
+          {
+            "@type": "Restaurant",
+            "@id": "https://burgertone.com/#toronto",
+            "name": "Burgertone Toronto",
+            "description": "Coming soon to Mt Pleasant Road in Toronto.",
+            "url": "https://burgertone.com/#location",
+            "image": "https://burgertone.com/assets/restaurant_exterior.png",
+            "email": "info@burgertone.com",
+            "servesCuisine": ["Burgers", "American", "Halal"],
+            "priceRange": "$",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "505 Mt Pleasant Road",
+              "addressLocality": "Toronto",
+              "addressRegion": "ON",
+              "postalCode": "M4S 2L9",
+              "addressCountry": "CA"
+            },
+            "sameAs": ["https://www.instagram.com/burgertone.ca/", "https://www.facebook.com/burgertone.ca/"]
+          }
+        ]
       }
     </script>
   </head>
