@@ -15,6 +15,79 @@ export const HIGHLIGHTS = [
   { name: 'Pop Burger', price: '$12.99', image: '/assets/pop.jpg', description: 'A juicy patty stuffed with marble cheese and toppings of your choice on a toasted brioche bun.' },
 ]
 
+export const MODEL_MENU = [
+  {
+    id: 'classic', category: 'Burgers', name: 'Classic Burger', price: '$9.99',
+    description: 'Mouth-watering beef patty with toppings of your choice on a toasted brioche bun.',
+    model: '/assets/3D_models/classic+3d+model.glb', poster: '/assets/classic.webp',
+  },
+  {
+    id: 'rock', category: 'Burgers', name: 'Rock Burger', price: '$14.99',
+    description: 'Two mouth-watering smashed beef patties with toppings of your choice on a toasted brioche bun.',
+    model: '/assets/3D_models/rock+3d+model.glb', poster: '/assets/rock.webp',
+  },
+  {
+    id: 'heavy-metal', category: 'Burgers', name: 'Heavy Metal Burger', price: '$17.99',
+    description: 'Three smashed beef patties with cheddar cheese and toppings of your choice on a toasted brioche bun.',
+    model: '/assets/3D_models/heavymetal_3d_model.glb', poster: '/assets/heavy-metal.webp',
+  },
+  {
+    id: 'pop', category: 'Burgers', name: 'Pop Burger', price: '$12.99',
+    description: 'A juicy patty stuffed with marble cheese and toppings of your choice on a toasted brioche bun.',
+    model: '/assets/3D_models/pop+3d+model.glb', poster: '/assets/pop.webp',
+  },
+  {
+    id: 'jazz', category: 'Chicken & More', name: 'Jazz Burger', price: '$11.99',
+    description: 'Crispy chicken breast with cheddar cheese and toppings of your choice on a toasted brioche bun.',
+    model: '/assets/3D_models/jazz+3d+model.glb', poster: '/assets/jazz.webp',
+  },
+  {
+    id: 'country', category: 'Chicken & More', name: 'Country Burger', price: '$11.99',
+    description: 'Chicken breast grilled to perfection with toppings of your choice on a toasted brioche bun.',
+    model: '/assets/3D_models/country+3d+model.glb', poster: '/assets/country.webp',
+  },
+  {
+    id: 'rnb', category: 'Chicken & More', name: 'R&B', price: '$15.99',
+    description: 'Philly cheesesteak with sautéed onions, mushrooms, jalapeño, mayo and your choice of cheese.',
+    model: '/assets/3D_models/rnb+3d+model.glb', poster: '/assets/rnb.webp',
+  },
+  {
+    id: 'hot-dog', category: 'Chicken & More', name: 'Who Let The Dogs Out', price: '$7.99',
+    description: 'A hot dog with toppings of your choice on a toasted hot dog bun.',
+    model: '/assets/3D_models/hot+dog+3d+model.glb', poster: '/assets/who-let-the-dogs-out-reference.jpg',
+  },
+  {
+    id: 'fries', category: 'Sides', name: 'Featuring (Fries)', price: '$5.99',
+    description: 'Burgertone’s signature fresh-cut fries.',
+    model: '/assets/3D_models/fries+3d+model.glb', poster: '/assets/fries.webp',
+  },
+  {
+    id: 'remix', category: 'Sides', name: 'Remix (Poutine)', price: '$8.99',
+    description: 'Signature fries topped with cheese curds and gravy.',
+    model: '/assets/3D_models/remix+3d+model.glb', poster: '/assets/remix.webp',
+  },
+  {
+    id: 'loops', category: 'Sides', name: 'Loops (Onion Rings)', price: '$6.99',
+    description: 'Crispy onion rings.',
+    model: '/assets/3D_models/loops+3d+model.glb', poster: '/assets/loops.webp',
+  },
+  {
+    id: 'chicken-dance', category: 'Sides', name: 'Chicken Dance', price: '$13.99',
+    description: 'Three battered crispy chicken breasts with fresh fries.',
+    model: '/assets/3D_models/chicken+dance+3d+model.glb', poster: '/assets/chicken-dance-reference.jpg',
+  },
+  {
+    id: 'milkshake', category: 'Drinks', name: 'Shake It Off', price: '$7.99',
+    description: 'Signature milkshake in vanilla, chocolate or strawberry.',
+    model: '/assets/3D_models/milkshake+3d+model.glb', poster: '/assets/shakes.webp',
+  },
+  {
+    id: 'canned-pop', category: 'Drinks', name: 'Canned Pop', price: '$1.99',
+    description: 'Pick your choice in store.',
+    model: '/assets/3D_models/pepsi+can+3d+model.glb', poster: '/assets/pop-cans-reference.jpg',
+  },
+]
+
 export const MENU = [
   {
     category: 'Deals', number: '01',

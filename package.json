@@ -11,6 +11,7 @@
     "optimize:images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
+    "@google/model-viewer": "^4.2.0",
     "gsap": "latest",
     "react": "latest",
     "react-dom": "latest"
