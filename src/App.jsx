@@ -19,7 +19,7 @@ function SpinIcon() {
 }
 
 function OrderLink({ children = 'Order Online', className = '' }) {
-  return <a className={`button button--primary ${className}`} href={ORDER_URL} target="_blank" rel="noopener noreferrer">{children}<ArrowIcon /></a>
+  return <a className={`button button--primary ${className}`} href={ORDER_URL} target="_blank" rel="noopener noreferrer" data-order-link>{children}<ArrowIcon /></a>
 }
 
 function BrandMark({ light = false }) {
@@ -61,9 +61,9 @@ function Navigation() {
 }
 
 const FILM_CLIPS = [
-  { src: '/assets/restaurant_walkthrough-scrub.mp4', poster: '/assets/restaurant_exterior.png', scroll: 3.2 },
+  { src: '/assets/restaurant_walkthrough-scrub.mp4', poster: '/assets/restaurant_exterior.webp', scroll: 3.2 },
   { src: '/assets/burger_transition-scrub.mp4', poster: '/assets/restaurant_interior.jpeg', scroll: 2.2 },
-  { src: '/assets/classic_burger_showcase-scrub.mp4', poster: '/assets/classic.jpg', scroll: 1.9 },
+  { src: '/assets/classic_burger_showcase-scrub.mp4', poster: '/assets/classic.webp', scroll: 1.9 },
 ]
 
 function fadeRange(progress, start, end, feather = .035) {
@@ -93,6 +93,7 @@ function CinematicStory() {
     let activeIndex = -1
     let disposed = false
     let userReady = !coarse
+    let initialMediaReady = document.readyState === 'complete'
 
     const primeVideo = (video) => {
       if (!coarse || !userReady || !video || video.readyState < 2) return
@@ -117,6 +118,7 @@ function CinematicStory() {
     const loadClip = async (index) => {
       if (index < 0 || index >= videos.length || loaded.has(index)) return
       loaded.add(index)
+      videos[index].poster = FILM_CLIPS[index].poster
       const controller = new AbortController()
       fetchControllers.push(controller)
 
@@ -187,14 +189,19 @@ function CinematicStory() {
       })
     }
 
+    const loadAround = (state, force = false) => {
+      if (!force && !initialMediaReady && scrollProgress <= .002) return
+      loadClip(state.index)
+      if (state.time / durations[state.index] > .35) loadClip(state.index + 1)
+    }
+
     const renderTarget = () => {
       if (disposed) return
 
       const targetGlobalTime = mapScrollToTime(scrollProgress)
       const state = findClip(targetGlobalTime)
       activeIndex = state.index
-      loadClip(activeIndex)
-      loadClip(activeIndex + 1)
+      loadAround(state)
       const activeVideo = videos[activeIndex]
       const epsilon = coarse ? .02 : .008
 
@@ -214,8 +221,7 @@ function CinematicStory() {
     const setScrollProgress = (progress, immediate = false) => {
       scrollProgress = Math.max(0, Math.min(1, progress))
       const targetState = findClip(mapScrollToTime(scrollProgress))
-      loadClip(targetState.index)
-      loadClip(targetState.index + 1)
+      loadAround(targetState)
 
       if (immediate) {
         if (renderQueued) cancelAnimationFrame(animationFrame)
@@ -276,9 +282,16 @@ function CinematicStory() {
     window.addEventListener('pointerdown', onFirstGesture, { once: true, passive: true })
     window.addEventListener('touchstart', onFirstGesture, { once: true, passive: true })
 
+    const onPageLoad = () => {
+      initialMediaReady = true
+      loadAround(findClip(mapScrollToTime(scrollProgress)), true)
+      scheduleRender()
+    }
+    if (document.readyState === 'complete') onPageLoad()
+    else window.addEventListener('load', onPageLoad, { once: true })
+
     videos.forEach((video, index) => { video.style.opacity = index === 0 ? 1 : 0 })
     renderInterface(0)
-    loadClip(0)
     setScrollProgress(trigger.progress, true)
     return () => {
       disposed = true
@@ -288,6 +301,7 @@ function CinematicStory() {
       blobUrls.forEach((url) => URL.revokeObjectURL(url))
       window.removeEventListener('pointerdown', onFirstGesture)
       window.removeEventListener('touchstart', onFirstGesture)
+      window.removeEventListener('load', onPageLoad)
       videos.forEach((video, index) => {
         video?.pause()
         video?.removeAttribute('src')
@@ -308,7 +322,7 @@ function CinematicStory() {
               className="cinema__video"
               key={clip.src}
               ref={(element) => { videoRefs.current[index] = element }}
-              poster={clip.poster}
+              poster={index === 0 ? clip.poster : undefined}
               preload="none"
               muted
               playsInline
@@ -562,7 +576,7 @@ function MenuExperience() {
             <h2 id="tracks-title">Choose a track.<br /><em>Spin the plate.</em></h2>
           </div>
           <div className="menu-experience__intro">
-            <p>Every model below came from the real Burgertone product. Pick a dish, then drag it around to inspect it from every angle.</p>
+            <p>Each 3D model represents a real item from Burgertone’s current menu. Pick a dish, then drag it around to inspect it from every angle.</p>
             <span><SpinIcon /> Drag horizontally · scroll normally</span>
           </div>
         </header>
@@ -617,7 +631,7 @@ function MenuExperience() {
 function Story() {
   return (
     <section className="brand-story" id="story" aria-labelledby="story-title">
-      <div className="brand-story__ticker" aria-hidden="true"><span>GOOD FOOD · GOOD MUSIC · MADE IN BURLINGTON · </span><span>GOOD FOOD · GOOD MUSIC · MADE IN BURLINGTON · </span></div>
+      <div className="brand-story__ticker" aria-hidden="true"><span>GOOD FOOD · GOOD MUSIC · FRESHLY HAND-CUT FRIES · BEEF GROUND EVERY DAY · </span><span>GOOD FOOD · GOOD MUSIC · FRESHLY HAND-CUT FRIES · BEEF GROUND EVERY DAY · </span></div>
       <div className="container brand-story__grid">
         <div className="brand-story__copy">
           <p className="eyebrow">Track 03 / Our story</p>
@@ -629,7 +643,7 @@ function Story() {
         <div className="brand-story__visual">
           <figure className="brand-story__interior"><img src="/assets/restaurant_interior.jpeg" alt="Approved Burgertone restaurant interior concept" loading="lazy" width="1920" height="1080" /></figure>
           <figure className="brand-story__counter"><img src="/assets/restaurant_counter.jpeg" alt="Approved Burgertone service counter concept" loading="lazy" width="1920" height="1080" /></figure>
-          <span>Made in Burlington<br />Played loud</span>
+          <span>Original location<br />Burlington</span>
         </div>
       </div>
     </section>
@@ -640,7 +654,10 @@ function Location() {
   return (
     <section className="visit" id="location" aria-labelledby="location-title">
       <div className="visit__backdrop">
-        <img src="/assets/restaurant_exterior.png" alt="Approved Burgertone storefront concept" loading="lazy" width="1920" height="1080" />
+        <picture>
+          <source srcSet="/assets/restaurant_exterior.webp" type="image/webp" />
+          <img src="/assets/restaurant_exterior.png" alt="Approved Burgertone storefront concept" loading="lazy" width="946" height="1034" />
+        </picture>
         <div />
       </div>
       <div className="container visit__content">

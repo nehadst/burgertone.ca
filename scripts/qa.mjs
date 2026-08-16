@@ -21,7 +21,8 @@ for (const [name, viewport] of sizes) {
   page.on('console', (message) => message.type() === 'error' && errors.push(`console: ${message.text()}`))
   page.on('pageerror', (error) => errors.push(`page: ${error.message}`))
   page.on('requestfailed', (request) => {
-    if (!request.url().includes('fonts.googleapis.com') && !request.url().includes('fonts.gstatic.com')) errors.push(`request: ${request.url()} (${request.failure()?.errorText})`)
+    const expectedMediaSeekAbort = request.failure()?.errorText === 'net::ERR_ABORTED' && (request.resourceType() === 'media' || request.url().startsWith('blob:') || request.url().includes('.mp4'))
+    if (!expectedMediaSeekAbort && !request.url().includes('fonts.googleapis.com') && !request.url().includes('fonts.gstatic.com')) errors.push(`request: ${request.url()} (${request.failure()?.errorText})`)
   })
 
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' })
@@ -29,7 +30,7 @@ for (const [name, viewport] of sizes) {
 
   const hrefs = await page.locator('a[href^="#"]').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
   const missingAnchors = await page.evaluate((anchors) => anchors.filter((href) => href !== '#' && !document.querySelector(href)), hrefs)
-  const orderHrefs = await page.locator('a.button--primary').evaluateAll((links) => links.map((link) => ({ href: link.href, target: link.target, rel: link.rel })))
+  const orderHrefs = await page.locator('a[data-order-link]').evaluateAll((links) => links.map((link) => ({ href: link.href, target: link.target, rel: link.rel })))
   const badOrders = orderHrefs.filter((link) => link.href !== orderURL || link.target !== '_blank' || !link.rel.includes('noopener') || !link.rel.includes('noreferrer'))
 
   const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight)
@@ -53,10 +54,21 @@ for (const [name, viewport] of sizes) {
     await page.keyboard.press('Escape')
   }
 
+  if (name !== 'desktop') await page.locator('.nav__toggle').click()
+  await page.locator('#mobile-menu a[href="#menu"]').click()
+  await page.waitForTimeout(2400)
+  const menuAnchor = await page.locator('#menu').evaluate((element) => ({
+    top: Math.round(element.getBoundingClientRect().top),
+    title: element.querySelector('#full-menu-title')?.textContent?.trim(),
+  }))
+  if (menuAnchor.top < 55 || menuAnchor.top > 100 || menuAnchor.title !== 'The full setlist.') errors.push(`Menu anchor landed incorrectly: ${JSON.stringify(menuAnchor)}`)
+
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForTimeout(120)
   await page.screenshot({ path: `qa-artifacts/${name}-hero.png`, fullPage: false })
   await page.keyboard.press('Tab')
   const focused = await page.evaluate(() => document.activeElement?.className || document.activeElement?.tagName)
-  results.push({ name, viewport, missingAnchors, orderLinks: orderHrefs.length, badOrders, maxOverflow, focused, errors })
+  results.push({ name, viewport, missingAnchors, orderLinks: orderHrefs.length, badOrders, maxOverflow, menuAnchor, focused, errors })
   await fs.writeFile('qa-artifacts/results.json', JSON.stringify({ baseURL, results }, null, 2))
   await context.close()
 }
