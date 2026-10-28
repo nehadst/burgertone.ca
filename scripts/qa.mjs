@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 
 const baseURL = process.env.BASE_URL || 'http://127.0.0.1:5174'
 const executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-const orderURL = 'https://burgertone.orderingclub.com/en/burgertone?menu=61439df1967db3aeae03277e_2'
+const orderURLs = ['https://burgertone.orderingclub.com/en/burgertone?menu=61439df1967db3aeae03277e_2', 'https://www.clover.com/online-ordering/burgertone-toronto']
 const sizes = [
   ['desktop', { width: 1440, height: 900 }],
   ['tablet', { width: 768, height: 1024 }],
@@ -31,7 +31,7 @@ for (const [name, viewport] of sizes) {
   const hrefs = await page.locator('a[href^="#"]').evaluateAll((links) => links.map((link) => link.getAttribute('href')))
   const missingAnchors = await page.evaluate((anchors) => anchors.filter((href) => href !== '#' && !document.querySelector(href)), hrefs)
   const orderHrefs = await page.locator('a[data-order-link]').evaluateAll((links) => links.map((link) => ({ href: link.href, target: link.target, rel: link.rel })))
-  const badOrders = orderHrefs.filter((link) => link.href !== orderURL || link.target !== '_blank' || !link.rel.includes('noopener') || !link.rel.includes('noreferrer'))
+  const badOrders = orderHrefs.filter((link) => !orderURLs.includes(link.href) || link.target !== '_blank' || !link.rel.includes('noopener') || !link.rel.includes('noreferrer'))
 
   const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight)
   let maxOverflow = 0
@@ -54,17 +54,16 @@ for (const [name, viewport] of sizes) {
     await page.keyboard.press('Escape')
   }
 
+  // The menu is its own page now: the nav link should load /menu.
   if (name !== 'desktop') await page.locator('.nav__toggle').click()
-  await page.locator('#mobile-menu a[href="#menu"]').click()
-  await page.waitForTimeout(2400)
-  const menuAnchor = await page.locator('#menu').evaluate((element) => ({
-    top: Math.round(element.getBoundingClientRect().top),
-    title: element.querySelector('#full-menu-title')?.textContent?.trim(),
-  }))
-  if (menuAnchor.top < 55 || menuAnchor.top > 100 || menuAnchor.title !== 'The full setlist.') errors.push(`Menu anchor landed incorrectly: ${JSON.stringify(menuAnchor)}`)
+  await page.locator('#mobile-menu a[href="/menu"]').click()
+  await page.waitForURL('**/menu')
+  await page.waitForTimeout(600)
+  const menuAnchor = await page.evaluate(() => ({ path: window.location.pathname, title: document.querySelector('#full-menu-title')?.textContent?.trim() }))
+  if (menuAnchor.path !== '/menu' || menuAnchor.title !== 'The full setlist.') errors.push(`Menu page did not load: ${JSON.stringify(menuAnchor)}`)
 
-  await page.evaluate(() => window.scrollTo(0, 0))
-  await page.waitForTimeout(120)
+  await page.goto(baseURL, { waitUntil: 'domcontentloaded' })
+  await page.waitForTimeout(500)
   await page.screenshot({ path: `qa-artifacts/${name}-hero.png`, fullPage: false })
   await page.keyboard.press('Tab')
   const focused = await page.evaluate(() => document.activeElement?.className || document.activeElement?.tagName)
@@ -77,7 +76,7 @@ const reducedContext = await browser.newContext({ viewport: { width: 390, height
 const reducedPage = await reducedContext.newPage()
 const reducedErrors = []
 reducedPage.on('pageerror', (error) => reducedErrors.push(error.message))
-await reducedPage.goto(baseURL, { waitUntil: 'domcontentloaded' })
+await reducedPage.goto(`${baseURL}/menu`, { waitUntil: 'domcontentloaded' })
 await reducedPage.waitForTimeout(500)
 await reducedPage.locator('#menu').scrollIntoViewIfNeeded()
 const reducedMenuVisible = await reducedPage.locator('#menu').isVisible()

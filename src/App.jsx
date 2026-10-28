@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { HERO_LOOP, HOURS, HIGHLIGHTS, MENU, NAV_ITEMS, ORDER_URL, STORY_TRACKS } from './data'
+import { HERO_LOOP, HOURS, HIGHLIGHTS, MENUS, NAV_ITEMS, OFFER, ORDER_URLS, REVIEW_URLS, STORY_TRACKS } from './data'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -18,15 +18,44 @@ function LoopIcon({ paused }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24">{paused ? <path d="M8 5.5v13l10-6.5z" /> : <path d="M8.5 5v14M15.5 5v14" />}</svg>
 }
 
-function OrderLink({ children = 'Order Online', className = '' }) {
-  return <a className={`button button--primary ${className}`} href={ORDER_URL} target="_blank" rel="noopener noreferrer" data-order-link>{children}<ArrowIcon /></a>
+function CloseIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+}
+
+const openOrderPicker = () => document.getElementById('order-picker')?.showModal()
+
+// With a location it links straight to that location's ordering site; without one it asks which location first.
+function OrderLink({ children = 'Order Online', className = '', location }) {
+  if (location) return <a className={`button button--primary ${className}`} href={ORDER_URLS[location]} target="_blank" rel="noopener noreferrer" data-order-link>{children}<ArrowIcon /></a>
+  return <button className={`button button--primary ${className}`} type="button" aria-haspopup="dialog" onClick={openOrderPicker}>{children}<ArrowIcon /></button>
+}
+
+function OrderPicker() {
+  const ref = useRef(null)
+  const close = () => ref.current?.close()
+  const options = [['burlington', 'Burlington', '2025 Upper Middle Road'], ['toronto', 'Toronto', '505 Mt Pleasant Rd']]
+
+  return (
+    <dialog className="order-picker" id="order-picker" ref={ref} aria-labelledby="order-picker-title" onClick={(event) => event.target === ref.current && close()}>
+      <div className="order-picker__panel">
+        <p className="eyebrow">Order online</p>
+        <h2 id="order-picker-title">Pick your<br /><em>Burgertone.</em></h2>
+        <button className="order-picker__close" type="button" aria-label="Close" onClick={close}><CloseIcon /></button>
+        {options.map(([id, name, address]) => (
+          <a className="order-picker__option" key={id} href={ORDER_URLS[id]} target="_blank" rel="noopener noreferrer" data-order-link onClick={close}>
+            <span>{name}</span><small>{address}</small><ArrowIcon />
+          </a>
+        ))}
+      </div>
+    </dialog>
+  )
 }
 
 function BrandMark({ light = false }) {
-  return <a className={`brand ${light ? 'brand--light' : ''}`} href="#home" aria-label="Burgertone home"><img src="/assets/burgertone-logo.png" alt="Burgertone" width="500" height="73" /></a>
+  return <a className={`brand ${light ? 'brand--light' : ''}`} href="/" aria-label="Burgertone home"><img src="/assets/burgertone-logo.png" alt="Burgertone" width="500" height="73" /></a>
 }
 
-function Navigation() {
+function Navigation({ page }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -45,11 +74,12 @@ function Navigation() {
   }, [open])
 
   return (
-    <header className={`nav-shell ${scrolled ? 'is-scrolled' : ''}`}>
+    <header className={`nav-shell ${scrolled || page !== 'home' ? 'is-scrolled' : ''}`}>
+      <OfferBar />
       <nav className="nav" aria-label="Main navigation">
         <BrandMark />
         <div className={`nav__links ${open ? 'is-open' : ''}`} id="mobile-menu">
-          {NAV_ITEMS.map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setOpen(false)}>{label}</a>)}
+          {NAV_ITEMS.map(([label, href, id]) => <a key={href} href={href} aria-current={id === page ? 'page' : undefined} onClick={() => setOpen(false)}>{label}</a>)}
           <OrderLink className="nav__order" />
         </div>
         <button className="nav__toggle" type="button" aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen(!open)}>
@@ -60,14 +90,29 @@ function Navigation() {
   )
 }
 
+// Browser-only values read through useSyncExternalStore: the pre-rendered HTML uses the server value and the
+// page switches to the real one right after hydrating, without a hydration mismatch.
+const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
+const subscribeReducedMotion = (onChange) => {
+  const query = window.matchMedia(REDUCED_MOTION)
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
+}
+const usePrefersReducedMotion = () => useSyncExternalStore(subscribeReducedMotion, () => window.matchMedia(REDUCED_MOTION).matches, () => false)
+
 function Entrance() {
   const ref = useRef(null)
   const videoRef = useRef(null)
-  const [reduceMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const [paused, setPaused] = useState(reduceMotion)
+  const reduceMotion = usePrefersReducedMotion()
+  // null until the video reports play/pause; until then it is paused only for reduced-motion visitors.
+  const [playState, setPlayState] = useState(null)
+  const paused = playState === null ? reduceMotion : playState === 'paused'
+
+  // The pre-rendered HTML autoplays; stop it for visitors who asked for less motion.
+  useEffect(() => { if (reduceMotion) videoRef.current?.pause() }, [reduceMotion])
 
   useLayoutEffect(() => {
-    if (reduceMotion) return
+    if (reduceMotion || window.matchMedia(REDUCED_MOTION).matches) return
     const root = document.documentElement
     const interactions = ['wheel', 'touchstart', 'keydown', 'pointerdown']
     let intro
@@ -128,8 +173,8 @@ function Entrance() {
                 playsInline
                 preload="auto"
                 disablePictureInPicture
-                onPlay={() => setPaused(false)}
-                onPause={() => setPaused(true)}
+                onPlay={() => setPlayState('playing')}
+                onPause={() => setPlayState('paused')}
               >
                 {HERO_LOOP.mobileVideo && <source src={HERO_LOOP.mobileVideo} type="video/mp4" media="(max-aspect-ratio: 4/5)" />}
                 <source src={HERO_LOOP.video} type="video/mp4" />
@@ -165,7 +210,7 @@ function Entrance() {
           </div>
           <div className="entrance__aside entrance__reveal">
             <p>Fresh Angus, hand-cut fries and good music—open in Burlington and coming soon to Toronto.</p>
-            <div className="entrance__actions"><OrderLink /><a className="button button--ghost" href="#menu">View menu</a></div>
+            <div className="entrance__actions"><OrderLink /><a className="button button--ghost" href="/menu">View menu</a></div>
           </div>
         </div>
       </div>
@@ -205,8 +250,7 @@ function ProductStory() {
             <div className="product__meta">
               <span>0{index + 1}</span>
               <h3>{item.name}</h3>
-              <p>{item.description}</p>
-              <div><strong>{item.price}</strong><OrderLink>Get this track</OrderLink></div>
+              <div><OrderLink>Get this track</OrderLink></div>
             </div>
           </article>
         ))}
@@ -216,31 +260,37 @@ function ProductStory() {
 }
 
 function Menu() {
+  const [active, setActive] = useState(MENUS[0].id)
+  const menu = MENUS.find((entry) => entry.id === active)
+
   return (
     <section className="menu-experience" id="menu" aria-labelledby="full-menu-title">
       <div className="container">
         <div className="menu-archive">
           <header className="menu-archive__head">
-            <div><p className="eyebrow">Every track / No hidden details</p><h2 id="full-menu-title">The full setlist.</h2></div>
-            <p>Everything stays readable here—no animation required. Order online for current customization and availability.</p>
+            <div><p className="eyebrow">Every track / No hidden details</p><h1 id="full-menu-title">The full setlist.</h1></div>
+            <p>Each location has its own menu. Prices, customization and availability are on that location's online ordering.</p>
           </header>
-          <div className="menu-archive__groups">
-            {MENU.map((group) => (
-              <article className="menu-archive__group" key={group.category}>
-                <header><span>{group.number}</span><h3>{group.category}</h3></header>
-                <div>
-                  {group.items.map((entry) => (
-                    <div className="menu-archive__item" key={entry.name}>
-                      <div><h4>{entry.name}</h4>{entry.description && <p>{entry.description}</p>}</div>
-                      <strong>{entry.price}</strong>
-                    </div>
-                  ))}
-                </div>
-                {group.notes?.map((note) => <p className="menu-archive__note" key={note}>{note}</p>)}
-              </article>
-            ))}
+          <div className="menu-archive__switch" role="group" aria-label="Choose a location">
+            {MENUS.map(({ id, location }) => <button key={id} type="button" aria-pressed={id === active} aria-controls={`menu-${id}`} onClick={() => setActive(id)}>{location}</button>)}
           </div>
-          <div className="menu-archive__cta"><p>Ready to build your order?</p><OrderLink>Customize & order</OrderLink></div>
+          {/* Both menus are in the page (and in the pre-rendered HTML for search engines); only the chosen one shows. */}
+          {MENUS.map(({ id, location, groups }) => (
+            <div className="menu-archive__groups" id={`menu-${id}`} key={id} hidden={id !== active} aria-label={`${location} menu`}>
+              {groups.map((group) => (
+                <article className="menu-archive__group" key={group.category}>
+                  <header><span>{group.number}</span><h3>{group.category}</h3></header>
+                  <div>
+                    {group.items.map((entry) => (
+                      <div className="menu-archive__item" key={entry.name}><h4>{entry.name}</h4>{entry.description && <p>{entry.description}</p>}</div>
+                    ))}
+                  </div>
+                  {group.notes?.map((note) => <p className="menu-archive__note" key={note}>{note}</p>)}
+                </article>
+              ))}
+            </div>
+          ))}
+          <div className="menu-archive__cta"><p>Ready to order from {menu.location}?</p><OrderLink location={menu.id}>Order from {menu.location}</OrderLink></div>
         </div>
       </div>
     </section>
@@ -254,10 +304,10 @@ function Story() {
       <div className="container brand-story__grid">
         <div className="brand-story__copy">
           <p className="eyebrow">Liner notes / Our story</p>
-          <h2 id="story-title">Good food.<br /><em>Good music.</em></h2>
+          <h1 id="story-title">Good food.<br /><em>Good music.</em></h1>
           <p>Burgertone was born out of a love for both good food and good music. Years of passion and love of food came together in hamburgers, smash burgers, cheesesteaks, hot dogs and refreshing shakes—all served with the grooviest of tunes.</p>
           <p>Our fries are freshly hand-cut, our beef is halal and ground every day, and our in-house, one-of-a-kind ToneSauce ties it all together.</p>
-          <a className="text-link" href="#location">Come orchestrate your burger <ArrowIcon /></a>
+          <a className="text-link" href="/#location">Come orchestrate your burger <ArrowIcon /></a>
         </div>
         <div className="sleeve">
           <div className="sleeve__record" aria-hidden="true">
@@ -281,6 +331,8 @@ function Story() {
 }
 
 function Location() {
+  const grandOpening = useOfferLive()
+
   return (
     <section className="visit" id="location" aria-labelledby="location-title">
       <div className="visit__backdrop">
@@ -302,25 +354,34 @@ function Location() {
             <p className="visit-card__note">Our second location, opening soon on Mt Pleasant Road.</p>
             <address>505 Mt Pleasant Rd<br />Toronto, ON M4S 2L9</address>
             <div className="visit-card__details">
-              <div><span>Phone</span><strong>To be announced</strong></div>
-              <div><span>Planned hours</span><strong>Same hours as Burlington</strong></div>
+              <div><span>Phone</span><strong><a href="tel:+14164856608">(416) 485-6608</a></strong></div>
             </div>
-            <a className="button button--primary" href="https://maps.google.com/?q=505+Mt+Pleasant+Rd+Toronto+ON+M4S+2L9" target="_blank" rel="noopener noreferrer">View Toronto location <ArrowIcon /></a>
+            <div className="visit-card__hours">
+              <h4>Hours</h4>
+              <dl>{HOURS.toronto.map(([day, time]) => <div key={day}><dt>{day}</dt><dd>{time}</dd></div>)}</dl>
+              {grandOpening && <p className="visit-card__special">Grand opening Fri, Oct 30: 4 PM – 10 PM</p>}
+            </div>
+            <div className="visit-card__actions"><a className="button button--ghost" href="https://maps.google.com/?q=505+Mt+Pleasant+Rd+Toronto+ON+M4S+2L9" target="_blank" rel="noopener noreferrer">View Toronto location <ArrowIcon /></a><OrderLink location="toronto">Order Toronto pickup</OrderLink></div>
           </article>
 
           <article className="visit-card visit-card--open">
             <header><span>02 / Burlington</span><b>Open now</b></header>
             <h3>Burlington</h3>
+            <p className="visit-card__note">Our original location on Upper Middle Road.</p>
             <address>2025 Upper Middle Road<br />Burlington, ON L7P 4K1</address>
+            <div className="visit-card__details">
+              <div><span>Phone</span><strong><a href="tel:+12893138225">(289) 313-8225</a></strong></div>
+            </div>
             <div className="visit-card__hours">
               <h4>Hours</h4>
-              <dl>{HOURS.map(([day, time]) => <div key={day}><dt>{day}</dt><dd>{time}</dd></div>)}</dl>
+              <dl>{HOURS.burlington.map(([day, time]) => <div key={day}><dt>{day}</dt><dd>{time}</dd></div>)}</dl>
             </div>
-            <div className="visit-card__actions"><a className="button button--ghost" href="https://maps.google.com/?q=2025+Upper+Middle+Road+Burlington+ON+L7P+4K1" target="_blank" rel="noopener noreferrer">Directions <ArrowIcon /></a><OrderLink>Order Burlington pickup</OrderLink></div>
+            <div className="visit-card__actions"><a className="button button--ghost" href="https://maps.google.com/?q=2025+Upper+Middle+Road+Burlington+ON+L7P+4K1" target="_blank" rel="noopener noreferrer">Directions <ArrowIcon /></a><OrderLink location="burlington">Order Burlington pickup</OrderLink></div>
           </article>
         </div>
         <div className="visit__contact-bar">
           <div><span>Burlington phone</span><a href="tel:+12893138225">(289) 313-8225</a></div>
+          <div><span>Toronto phone</span><a href="tel:+14164856608">(416) 485-6608</a></div>
           <div><span>Email</span><a href="mailto:info@burgertone.com">info@burgertone.com</a></div>
           <div><a href="https://www.instagram.com/burgertone.ca/" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="https://www.facebook.com/burgertone.ca/" target="_blank" rel="noopener noreferrer">Facebook ↗</a></div>
         </div>
@@ -335,33 +396,124 @@ function Footer() {
       <div className="container">
         <div className="footer__top"><BrandMark light /><OrderLink>Turn up the flavour</OrderLink></div>
         <div className="footer__bottom">
-          <div>{NAV_ITEMS.map(([label, id]) => <a key={id} href={`#${id}`}>{label}</a>)}</div>
+          <div>{NAV_ITEMS.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</div>
           <p>Burlington open · Toronto coming soon</p>
-          <p>© {new Date().getFullYear()} Burgertone</p>
+          <p suppressHydrationWarning>© {new Date().getFullYear()} Burgertone</p>
         </div>
       </div>
     </footer>
   )
 }
 
-export default function App() {
+function NotFound() {
+  return (
+    <section className="feedback" aria-labelledby="not-found-title">
+      <div className="container">
+        <header className="feedback__head">
+          <p className="eyebrow">404 / Track not found</p>
+          <h1 id="not-found-title">Wrong<br /><em>track.</em></h1>
+          <p>That page isn't on the setlist anymore. Head back home or check out the menu.</p>
+        </header>
+        <div className="entrance__actions"><a className="button button--primary" href="/">Back to home <ArrowIcon /></a><a className="button button--ghost" href="/menu">View menu</a></div>
+      </div>
+    </section>
+  )
+}
+
+function Feedback() {
+  const cards = [
+    { id: 'toronto', number: '01', name: 'Toronto', address: ['505 Mt Pleasant Rd', 'Toronto, ON M4S 2L9'], tone: 'featured' },
+    { id: 'burlington', number: '02', name: 'Burlington', address: ['2025 Upper Middle Road', 'Burlington, ON L7P 4K1'], tone: 'open' },
+  ]
+
+  return (
+    <section className="feedback" aria-labelledby="feedback-title">
+      <div className="container">
+        <header className="feedback__head">
+          <p className="eyebrow">Feedback / Leave a review</p>
+          <h1 id="feedback-title">How did<br /><em>we sound?</em></h1>
+          <p>Your feedback keeps the music right. Pick the location you visited and leave us a Google review.</p>
+        </header>
+        <div className="visit__locations">
+          {cards.map(({ id, number, name, address, tone }) => (
+            <article className={`visit-card visit-card--${tone}`} key={id}>
+              <header><span>{number} / {name}</span></header>
+              <h2>{name}</h2>
+              <address>{address[0]}<br />{address[1]}</address>
+              <a className="button button--primary" href={REVIEW_URLS[id]} target="_blank" rel="noopener noreferrer">Review {name} on Google <ArrowIcon /></a>
+            </article>
+          ))}
+        </div>
+        <p className="feedback__private">Something we should know privately? Email <a href="mailto:info@burgertone.com">info@burgertone.com</a></p>
+      </div>
+    </section>
+  )
+}
+
+// The grand-opening offer (announcement bar + poster popup) only renders in the browser, until the event ends.
+const subscribeNever = () => () => {}
+const useOfferLive = () => useSyncExternalStore(subscribeNever, () => Date.now() < Date.parse(OFFER.endsAt), () => false)
+
+const openOffer = () => document.getElementById('offer-dialog')?.showModal()
+
+function OfferBar() {
+  if (!useOfferLive()) return null
+  return (
+    <button className="offer-bar" type="button" aria-haspopup="dialog" onClick={openOffer}>
+      <b>Free beef cheeseburgers</b><span className="offer-bar__detail">Toronto grand opening</span><span>Fri Oct 30<span className="offer-bar__detail"> · 4–10 PM</span></span><em>View offer <ArrowIcon /></em>
+    </button>
+  )
+}
+
+function Offer() {
+  const ref = useRef(null)
+  const live = useOfferLive()
+  if (!live) return null
+  const close = () => ref.current?.close()
+
+  return (
+    <>
+      <dialog className="offer-dialog" id="offer-dialog" ref={ref} aria-label="Toronto grand opening offer" onClick={(event) => event.target === ref.current && close()}>
+        <button className="offer-dialog__close" type="button" aria-label="Close" onClick={close}><CloseIcon /></button>
+        <img src={OFFER.image} alt={OFFER.alt} width={OFFER.width} height={OFFER.height} />
+        <div className="offer-dialog__bar">
+          <p>Follow <strong>@burgertone.ca</strong> on Instagram to get a free beef cheeseburger at our Toronto grand opening.</p>
+          <div>
+            <a className="button button--primary" href="https://www.instagram.com/burgertone.ca/" target="_blank" rel="noopener noreferrer">Follow on Instagram <ArrowIcon /></a>
+            <a className="button button--ghost" href="https://maps.google.com/?q=505+Mt+Pleasant+Rd+Toronto+ON+M4S+2L9" target="_blank" rel="noopener noreferrer">Directions <ArrowIcon /></a>
+          </div>
+        </div>
+      </dialog>
+    </>
+  )
+}
+
+export default function App({ page = 'home' }) {
   useEffect(() => {
-    const onLoad = () => ScrollTrigger.refresh()
-    window.addEventListener('load', onLoad)
+    // Pinned sections change the page height once measured, so re-jump to a #section link (e.g. /#location
+    // from another page) after ScrollTrigger has settled.
+    const onLoad = () => requestAnimationFrame(() => requestAnimationFrame(() => {
+      ScrollTrigger.refresh()
+      if (window.location.hash) document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ behavior: 'instant' })
+    }))
+    if (document.readyState === 'complete') onLoad()
+    else window.addEventListener('load', onLoad, { once: true })
     return () => window.removeEventListener('load', onLoad)
   }, [])
 
   return (
     <>
-      <Navigation />
-      <main id="main">
-        <Entrance />
-        <ProductStory />
-        <Menu />
-        <Story />
-        <Location />
+      <Navigation page={page} />
+      <main id="main" className={page === 'home' ? undefined : 'main--page'}>
+        {page === 'home' && <><Entrance /><ProductStory /><Location /></>}
+        {page === 'menu' && <Menu />}
+        {page === 'about' && <Story />}
+        {page === 'feedback' && <Feedback />}
+        {page === 'notFound' && <NotFound />}
       </main>
       <Footer />
+      <OrderPicker />
+      <Offer />
     </>
   )
 }
