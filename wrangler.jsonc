@@ -1,0 +1,13 @@
+// Cloudflare Workers deploy config (`npx wrangler deploy` after `npm run build`).
+// Static files only: the pre-rendered pages in dist/ are served as-is, with no Worker code.
+{
+  "name": "burgertone-ca",
+  "compatibility_date": "2026-10-23",
+  "assets": {
+    "directory": "./dist",
+    // /menu serves menu.html; /menu.html and /menu/ redirect to /menu.
+    "html_handling": "auto-trailing-slash",
+    // Unknown URLs get dist/404.html with a real 404 status (not the home page).
+    "not_found_handling": "404-page"
+  }
+}

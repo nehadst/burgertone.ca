@@ -16,7 +16,7 @@
     {
       "name": "burgertone-cloudflare",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "wrangler@4", "pages", "dev", "dist", "--port", "8788"],
+      "runtimeArgs": ["--yes", "wrangler@4", "dev", "--port", "8788"],
       "port": 8788
     }
   ]
