@@ -8,6 +8,8 @@ export default defineConfig(({ isPreview }) => ({
   appType: isPreview ? 'mpa' : 'spa',
   // Bundle gsap into the build-time SSR renderer (its ESM files are not Node-importable as-is).
   ssr: { noExternal: ['gsap'] },
+  // Lets the pre-rendered HTML decide date-based content (the offer bar) the same way the browser first will.
+  define: { 'import.meta.env.BUILT_AT': JSON.stringify(Date.now()) },
   server: { host: '0.0.0.0' },
   preview: { host: '0.0.0.0' },
 }))

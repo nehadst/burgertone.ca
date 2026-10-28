@@ -5,9 +5,16 @@ import { HERO_LOOP, HOURS, HIGHLIGHTS, MENUS, NAV_ITEMS, OFFER, ORDER_URLS, REVI
 
 gsap.registerPlugin(ScrollTrigger)
 
+// WebP in 800/1200/1600px widths; the browser picks by screen density. On phones the headliner card shows the
+// 16:9 photo cropped to 4:3, so it renders about 1.33x the card width. JPEG is the fallback for old browsers.
 function FoodImage({ src, ...props }) {
-  const modernSrc = src.replace(/\.jpg$/i, '.webp')
-  return <picture><source srcSet={modernSrc} type="image/webp" /><img src={src} {...props} /></picture>
+  const webp = src.replace(/\.jpg$/i, '')
+  return (
+    <picture>
+      <source srcSet={`${webp}-800.webp 800w, ${webp}-1200.webp 1200w, ${webp}.webp 1600w`} sizes="(max-width: 900px) min(109vw, 533px), 1600px" type="image/webp" />
+      <img src={src} {...props} />
+    </picture>
+  )
 }
 
 function ArrowIcon() {
@@ -16,6 +23,22 @@ function ArrowIcon() {
 
 function LoopIcon({ paused }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24">{paused ? <path d="M8 5.5v13l10-6.5z" /> : <path d="M8.5 5v14M15.5 5v14" />}</svg>
+}
+
+function PhoneIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6.6 3.5h3l1.6 4.4-2 1.3a11.5 11.5 0 0 0 5.6 5.6l1.3-2 4.4 1.6v3a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 4.6 5.6a2 2 0 0 1 2-2.1Z" /></svg>
+}
+
+// Collapses consecutive days with the same hours ("Monday – Thursday"); all seven alike reads "Every day".
+const groupHours = (hours) => {
+  const groups = []
+  for (const [day, time] of hours) {
+    const last = groups.at(-1)
+    if (last?.time === time) last.to = day
+    else groups.push({ from: day, to: day, time })
+  }
+  if (groups.length === 1 && hours.length === 7) return [['Every day', groups[0].time]]
+  return groups.map(({ from, to, time }) => [from === to ? from : `${from} – ${to}`, time])
 }
 
 function CloseIcon() {
@@ -52,10 +75,10 @@ function OrderPicker() {
 }
 
 function BrandMark({ light = false }) {
-  return <a className={`brand ${light ? 'brand--light' : ''}`} href="/" aria-label="Burgertone home"><img src="/assets/burgertone-logo.png" alt="Burgertone" width="500" height="73" /></a>
+  return <a className={`brand ${light ? 'brand--light' : ''}`} href="/" aria-label="Burgertone home"><picture><source srcSet="/assets/burgertone-logo.webp" type="image/webp" /><img src="/assets/burgertone-logo.png" alt="Burgertone" width="500" height="73" /></picture></a>
 }
 
-function Navigation({ page }) {
+function Navigation({ page, offer }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -74,7 +97,7 @@ function Navigation({ page }) {
   }, [open])
 
   return (
-    <header className={`nav-shell ${scrolled || page !== 'home' ? 'is-scrolled' : ''}`}>
+    <header className={`nav-shell ${scrolled || page !== 'home' ? 'is-scrolled' : ''} ${offer ? 'has-offer' : ''}`}>
       <OfferBar />
       <nav className="nav" aria-label="Main navigation">
         <BrandMark />
@@ -242,18 +265,20 @@ function ProductStory() {
           <p className="eyebrow">Selected tracks</p>
           <h2 id="highlights-title">The<br />headliners.</h2>
           <p>Four signatures. One very loud appetite.</p>
-          <span>Scroll to dig in →</span>
+          <span><span className="only-wide">Scroll</span><span className="only-narrow">Swipe</span> to dig in →</span>
         </header>
-        {HIGHLIGHTS.map((item, index) => (
-          <article className="product-panel product" key={item.name}>
-            <div className="product__image"><FoodImage src={item.image} alt={`${item.name} served with fries`} loading="lazy" width="1920" height="1080" /></div>
-            <div className="product__meta">
-              <span>0{index + 1}</span>
-              <h3>{item.name}</h3>
-              <div><OrderLink>Get this track</OrderLink></div>
-            </div>
-          </article>
-        ))}
+        <div className="products__cards">
+          {HIGHLIGHTS.map((item, index) => (
+            <article className="product-panel product" key={item.name}>
+              <div className="product__image"><FoodImage src={item.image} alt={`${item.name} served with fries`} loading="lazy" width="1920" height="1080" /></div>
+              <div className="product__meta">
+                <span>0{index + 1}</span>
+                <h3>{item.name}</h3>
+                <div><OrderLink>Get this track</OrderLink></div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -279,10 +304,10 @@ function Menu() {
             <div className="menu-archive__groups" id={`menu-${id}`} key={id} hidden={id !== active} aria-label={`${location} menu`}>
               {groups.map((group) => (
                 <article className="menu-archive__group" key={group.category}>
-                  <header><span>{group.number}</span><h3>{group.category}</h3></header>
+                  <header><span>{group.number}</span><h2>{group.category}</h2></header>
                   <div>
                     {group.items.map((entry) => (
-                      <div className="menu-archive__item" key={entry.name}><h4>{entry.name}</h4>{entry.description && <p>{entry.description}</p>}</div>
+                      <div className="menu-archive__item" key={entry.name}><h3>{entry.name}</h3>{entry.description && <p>{entry.description}</p>}</div>
                     ))}
                   </div>
                   {group.notes?.map((note) => <p className="menu-archive__note" key={note}>{note}</p>)}
@@ -316,7 +341,7 @@ function Story() {
           </div>
           <div className="sleeve__cover">
             <header><span>Burgertone</span><span>Side A</span></header>
-            <h3>House<br />rules.</h3>
+            <h2>House<br />rules.</h2>
             <ol className="sleeve__tracks">
               {STORY_TRACKS.map(([title, note], index) => (
                 <li key={title}><b>{String(index + 1).padStart(2, '0')}</b><strong>{title}</strong><small>{note}</small></li>
@@ -337,6 +362,7 @@ function Location() {
     <section className="visit" id="location" aria-labelledby="location-title">
       <div className="visit__backdrop">
         <picture>
+          <source media="(max-width: 900px)" srcSet="/assets/restaurant_exterior-640.webp" type="image/webp" />
           <source srcSet="/assets/restaurant_exterior.webp" type="image/webp" />
           <img src="/assets/restaurant_exterior.png" alt="Approved Burgertone storefront concept" loading="lazy" width="946" height="1034" />
         </picture>
@@ -353,15 +379,13 @@ function Location() {
             <h3>Toronto</h3>
             <p className="visit-card__note">Our second location, opening soon on Mt Pleasant Road.</p>
             <address>505 Mt Pleasant Rd<br />Toronto, ON M4S 2L9</address>
-            <div className="visit-card__details">
-              <div><span>Phone</span><strong><a href="tel:+14164856608">(416) 485-6608</a></strong></div>
-            </div>
+            <a className="visit-card__phone" href="tel:+14164856608"><PhoneIcon />(416) 485-6608</a>
             <div className="visit-card__hours">
               <h4>Hours</h4>
-              <dl>{HOURS.toronto.map(([day, time]) => <div key={day}><dt>{day}</dt><dd>{time}</dd></div>)}</dl>
+              <dl>{groupHours(HOURS.toronto).map(([days, time]) => <div key={days}><dt>{days}</dt><dd>{time}</dd></div>)}</dl>
               {grandOpening && <p className="visit-card__special">Grand opening Fri, Oct 30: 4 PM – 10 PM</p>}
             </div>
-            <div className="visit-card__actions"><a className="button button--ghost" href="https://maps.google.com/?q=505+Mt+Pleasant+Rd+Toronto+ON+M4S+2L9" target="_blank" rel="noopener noreferrer">View Toronto location <ArrowIcon /></a><OrderLink location="toronto">Order Toronto pickup</OrderLink></div>
+            <div className="visit-card__actions"><a className="button button--ghost" href="https://maps.google.com/?q=505+Mt+Pleasant+Rd+Toronto+ON+M4S+2L9" target="_blank" rel="noopener noreferrer">Directions <ArrowIcon /></a><OrderLink location="toronto">Order Toronto pickup</OrderLink></div>
           </article>
 
           <article className="visit-card visit-card--open">
@@ -369,19 +393,15 @@ function Location() {
             <h3>Burlington</h3>
             <p className="visit-card__note">Our original location on Upper Middle Road.</p>
             <address>2025 Upper Middle Road<br />Burlington, ON L7P 4K1</address>
-            <div className="visit-card__details">
-              <div><span>Phone</span><strong><a href="tel:+12893138225">(289) 313-8225</a></strong></div>
-            </div>
+            <a className="visit-card__phone" href="tel:+12893138225"><PhoneIcon />(289) 313-8225</a>
             <div className="visit-card__hours">
               <h4>Hours</h4>
-              <dl>{HOURS.burlington.map(([day, time]) => <div key={day}><dt>{day}</dt><dd>{time}</dd></div>)}</dl>
+              <dl>{groupHours(HOURS.burlington).map(([days, time]) => <div key={days}><dt>{days}</dt><dd>{time}</dd></div>)}</dl>
             </div>
             <div className="visit-card__actions"><a className="button button--ghost" href="https://maps.google.com/?q=2025+Upper+Middle+Road+Burlington+ON+L7P+4K1" target="_blank" rel="noopener noreferrer">Directions <ArrowIcon /></a><OrderLink location="burlington">Order Burlington pickup</OrderLink></div>
           </article>
         </div>
         <div className="visit__contact-bar">
-          <div><span>Burlington phone</span><a href="tel:+12893138225">(289) 313-8225</a></div>
-          <div><span>Toronto phone</span><a href="tel:+14164856608">(416) 485-6608</a></div>
           <div><span>Email</span><a href="mailto:info@burgertone.com">info@burgertone.com</a></div>
           <div><a href="https://www.instagram.com/burgertone.ca/" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="https://www.facebook.com/burgertone.ca/" target="_blank" rel="noopener noreferrer">Facebook ↗</a></div>
         </div>
@@ -450,9 +470,10 @@ function Feedback() {
   )
 }
 
-// The grand-opening offer (announcement bar + poster popup) only renders in the browser, until the event ends.
+// The grand-opening offer (announcement bar + poster popup) shows until the event ends. The pre-rendered HTML
+// uses the build time, so the bar is already in place on load (no layout shift); browsers re-check the clock.
 const subscribeNever = () => () => {}
-const useOfferLive = () => useSyncExternalStore(subscribeNever, () => Date.now() < Date.parse(OFFER.endsAt), () => false)
+const useOfferLive = () => useSyncExternalStore(subscribeNever, () => Date.now() < Date.parse(OFFER.endsAt), () => import.meta.env.BUILT_AT < Date.parse(OFFER.endsAt))
 
 const openOffer = () => document.getElementById('offer-dialog')?.showModal()
 
@@ -460,7 +481,7 @@ function OfferBar() {
   if (!useOfferLive()) return null
   return (
     <button className="offer-bar" type="button" aria-haspopup="dialog" onClick={openOffer}>
-      <b>Free beef cheeseburgers</b><span className="offer-bar__detail">Toronto grand opening</span><span>Fri Oct 30<span className="offer-bar__detail"> · 4–10 PM</span></span><em>View offer <ArrowIcon /></em>
+      <b><span className="offer-bar__detail">Free beef cheeseburgers</span><span className="offer-bar__short">Free burgers</span></b><span className="offer-bar__detail">Toronto grand opening</span><span>Fri Oct 30<span className="offer-bar__detail"> · 4–10 PM</span></span><em>View offer <ArrowIcon /></em>
     </button>
   )
 }
@@ -475,7 +496,7 @@ function Offer() {
     <>
       <dialog className="offer-dialog" id="offer-dialog" ref={ref} aria-label="Toronto grand opening offer" onClick={(event) => event.target === ref.current && close()}>
         <button className="offer-dialog__close" type="button" aria-label="Close" onClick={close}><CloseIcon /></button>
-        <img src={OFFER.image} alt={OFFER.alt} width={OFFER.width} height={OFFER.height} />
+        <img src={OFFER.image} alt={OFFER.alt} width={OFFER.width} height={OFFER.height} loading="lazy" />
         <div className="offer-dialog__bar">
           <p>Follow <strong>@burgertone.ca</strong> on Instagram to get a free beef cheeseburger at our Toronto grand opening.</p>
           <div>
@@ -501,10 +522,12 @@ export default function App({ page = 'home' }) {
     return () => window.removeEventListener('load', onLoad)
   }, [])
 
+  const offer = useOfferLive()
+
   return (
     <>
-      <Navigation page={page} />
-      <main id="main" className={page === 'home' ? undefined : 'main--page'}>
+      <Navigation page={page} offer={offer} />
+      <main id="main" className={[page === 'home' ? '' : 'main--page', offer ? 'has-offer' : ''].join(' ').trim() || undefined}>
         {page === 'home' && <><Entrance /><ProductStory /><Location /></>}
         {page === 'menu' && <Menu />}
         {page === 'about' && <Story />}

@@ -7,7 +7,13 @@ import { pathToFileURL } from 'node:url'
 const dist = path.resolve('dist')
 const ssrDir = path.resolve('dist-ssr')
 const { render, PAGES, OLD_PATHS, SITE_URL } = await import(pathToFileURL(path.join(ssrDir, 'entry-server.js')).href)
-const template = await fs.readFile(path.join(dist, 'index.html'), 'utf8')
+let template = await fs.readFile(path.join(dist, 'index.html'), 'utf8')
+// Inline the stylesheet: on phones the separate CSS request was the main thing delaying first paint.
+const cssLink = /<link rel="stylesheet"[^>]*href="(\/assets\/[^"]+\.css)"[^>]*>/
+const cssHref = template.match(cssLink)?.[1]
+if (!cssHref) throw new Error('prerender: stylesheet link not found in index.html')
+const css = await fs.readFile(path.join(dist, cssHref), 'utf8')
+template = template.replace(cssLink, () => `<style>${css}</style>`)
 const attr = (value) => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 
 const swap = (html, pattern, value) => {
