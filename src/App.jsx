@@ -232,7 +232,7 @@ function Entrance() {
             <h1 id="entrance-title" className="entrance__reveal">Turn up<br /><em>the flavour.</em></h1>
           </div>
           <div className="entrance__aside entrance__reveal">
-            <p>Grass-fed halal beef, hand-cut fries and good music—now open in Burlington and Toronto.</p>
+            <p>Grass-fed halal beef, hand-cut fries and good music. Now open in Burlington and Toronto.</p>
             <div className="entrance__actions"><OrderLink /><a className="button button--ghost" href="/menu">View menu</a></div>
           </div>
         </div>
@@ -372,7 +372,7 @@ function Story() {
         <div className="brand-story__copy">
           <p className="eyebrow">Liner notes / Our story</p>
           <h1 id="story-title">Good food.<br /><em>Good music.</em></h1>
-          <p>Burgertone was born out of a love for both good food and good music. Years of passion and love of food came together in hamburgers, smash burgers, cheesesteaks, hot dogs and refreshing shakes—all served with the grooviest of tunes.</p>
+          <p>Burgertone was born out of a love for both good food and good music. Years of passion and love of food came together in hamburgers, smash burgers, cheesesteaks, hot dogs and refreshing shakes, all served with the grooviest of tunes.</p>
           <p>Our beef is grass-fed, halal and ground every day, our fries are freshly hand-cut, and our in-house, one-of-a-kind ToneSauce ties it all together.</p>
           <a className="text-link" href="/#location">Come orchestrate your burger <ArrowIcon /></a>
         </div>
