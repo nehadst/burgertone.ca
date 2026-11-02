@@ -252,6 +252,34 @@ main.has-offer .entrance__copy { top: calc(40px + var(--safe-top)); }
 .sleeve__tracks small { color: rgba(255,255,255,.95); font-size: .76rem; text-align: right; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Grass-fed beef feature: photo with a spinning record-label seal, the beef facts as a track list, a red ticker. */
+.beef { position: relative; overflow: hidden; color: var(--black); background: var(--cream); }
+.beef__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr; grid-template-areas: 'photo head' 'photo body'; column-gap: clamp(3rem, 7vw, 8rem); padding: clamp(7rem, 11vw, 11rem) 0; }
+.beef__head { grid-area: head; align-self: end; }
+.beef__head .eyebrow { color: #a51d19; }
+.beef__head h2 { margin: 0 0 2.2rem; font-size: clamp(4.4rem, 7.2vw, 8.4rem); }
+.beef__head h2 em { color: var(--red); font-style: normal; }
+.beef__photo { grid-area: photo; position: relative; align-self: center; aspect-ratio: 1; background: var(--black); box-shadow: 0 34px 70px rgba(11,10,9,.28); }
+.beef__photo picture, .beef__photo img { width: 100%; height: 100%; }
+.beef__photo img { object-fit: cover; object-position: 50% 60%; }
+.beef__body > p { max-width: 540px; margin: 0 0 2.4rem; font-size: clamp(1.02rem, 1.3vw, 1.2rem); line-height: 1.7; }
+.beef__points { max-width: 580px; margin: 0 0 2.8rem; padding: 0; list-style: none; border-top: 1px solid rgba(11,10,9,.22); }
+.beef__points li { display: grid; grid-template-columns: 2.4rem minmax(0, auto) 1fr; align-items: baseline; gap: 1rem; padding: 1.05rem 0; border-bottom: 1px solid rgba(11,10,9,.22); }
+.beef__points b { color: #a51d19; font: 600 .85rem var(--display); }
+.beef__points strong { font: 700 clamp(1.35rem, 1.9vw, 1.75rem)/1 var(--display); text-transform: uppercase; white-space: nowrap; }
+.beef__points span { color: #514b42; font-size: .92rem; text-align: right; }
+.beef__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2.2rem; }
+.seal { position: absolute; top: -8%; right: -8%; width: clamp(150px, 14vw, 210px); aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; color: var(--black); background: var(--yellow); box-shadow: 0 18px 40px rgba(11,10,9,.32); }
+.seal::before { content: ''; position: absolute; inset: 27%; border: 1.5px solid currentColor; border-radius: 50%; }
+.seal svg { position: absolute; inset: 0; width: 100%; height: 100%; animation: spin 24s linear infinite; }
+.seal text { fill: currentColor; font: 600 15px var(--display); letter-spacing: .1em; }
+.seal span { position: relative; color: var(--red); font: 700 clamp(1.15rem, 1.5vw, 1.55rem)/.88 var(--display); letter-spacing: -.01em; text-align: center; text-transform: uppercase; }
+.beef__ticker { overflow: hidden; color: var(--cream); background: var(--red); }
+.beef__ticker > div { display: flex; width: max-content; animation: ticker 32s linear infinite; }
+.beef__ticker span { display: flex; align-items: center; gap: .5em; padding: 1.35rem .5em 1.35rem 0; font: 700 clamp(2.4rem, 4.6vw, 4.8rem)/.9 var(--display); letter-spacing: -.02em; text-transform: uppercase; white-space: nowrap; }
+.beef__ticker i { width: .2em; height: .2em; flex: none; border-radius: 50%; background: var(--yellow); }
+@keyframes ticker { to { transform: translateX(-50%); } }
+
 .visit { position: relative; min-height: 1080px; overflow: hidden; color: var(--white); background: var(--black); }
 .visit__backdrop { position: absolute; inset: 0; }
 .visit__backdrop picture, .visit__backdrop img { width: 100%; height: 100%; }
@@ -291,7 +319,6 @@ main.has-offer .entrance__copy { top: calc(40px + var(--safe-top)); }
 .visit-card__hours dl > div { display: grid; grid-template-columns: 1fr auto; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid rgba(255,255,255,.16); font-size: .86rem; }
 .visit-card--featured .visit-card__hours h4 { color: #a51d19; }
 .visit-card--featured .visit-card__hours dl > div { border-color: rgba(11,10,9,.2); }
-.visit-card__special { margin: .9rem 0 0; padding: .7rem .9rem; color: var(--white); background: var(--red); font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .visit-card__hours dd { margin: 0; white-space: nowrap; }
 .visit-card__actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 2rem; }
 .visit__contact-bar { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 2rem; padding: 1.4rem 2rem; color: var(--cream); background: var(--red); }
@@ -472,6 +499,11 @@ main.has-offer .entrance__copy { top: calc(40px + var(--safe-top)); }
   .product__meta > div { margin-top: auto; }
   .product__meta .button { width: 100%; }
   .only-wide { display: none; }
+  .beef__grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: 'head' 'photo' 'body'; padding: 5.5rem 0 5rem; }
+  .beef__head h2 { margin-bottom: 3rem; font-size: clamp(3.6rem, 14vw, 6rem); }
+  .beef__photo { aspect-ratio: 4 / 3; margin-bottom: 2.6rem; }
+  .seal { top: -34px; right: -10px; width: 124px; }
+  .seal span { font-size: 1.05rem; }
   .only-narrow { display: inline; }
   .menu-experience { padding: 7rem 0; }
   .menu-archive__head { grid-template-columns: 1fr; gap: 1.5rem; }
@@ -535,6 +567,10 @@ main.has-offer .entrance__copy { top: calc(40px + var(--safe-top)); }
   .equalizer { height: 120px; }
   .flavour__bpm { bottom: 135px; }
   .products { padding: 3.5rem 0; }
+  .beef__points li { grid-template-columns: 2rem minmax(0, 1fr); gap: .3rem .8rem; }
+  .beef__points span { grid-column: 2; text-align: left; }
+  .beef__actions .button { width: 100%; }
+  .beef__ticker span { font-size: 2.2rem; padding-block: 1.1rem; }
   .menu-experience { padding: 5.5rem 0; }
   .menu-archive__head h1 { font-size: 4.8rem; }
   .menu-archive__group { padding-top: 2.7rem; }

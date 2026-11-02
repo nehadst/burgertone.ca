@@ -1,17 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { HERO_LOOP, HOURS, HIGHLIGHTS, MENUS, NAV_ITEMS, OFFER, ORDER_URLS, REVIEW_URLS, STORY_TRACKS } from './data'
+import { BEEF_POINTS, HERO_LOOP, HOURS, HIGHLIGHTS, MENUS, NAV_ITEMS, OFFER, ORDER_URLS, REVIEW_URLS, STORY_TRACKS } from './data'
 
 gsap.registerPlugin(ScrollTrigger)
 
 // WebP in 800/1200/1600px widths; the browser picks by screen density. On phones the headliner card shows the
 // 16:9 photo cropped to 4:3, so it renders about 1.33x the card width. JPEG is the fallback for old browsers.
-function FoodImage({ src, ...props }) {
+function FoodImage({ src, sizes = '(max-width: 900px) min(109vw, 533px), 1600px', ...props }) {
   const webp = src.replace(/\.jpg$/i, '')
   return (
     <picture>
-      <source srcSet={`${webp}-800.webp 800w, ${webp}-1200.webp 1200w, ${webp}.webp 1600w`} sizes="(max-width: 900px) min(109vw, 533px), 1600px" type="image/webp" />
+      <source srcSet={`${webp}-800.webp 800w, ${webp}-1200.webp 1200w, ${webp}.webp 1600w`} sizes={sizes} type="image/webp" />
       <img src={src} {...props} />
     </picture>
   )
@@ -212,14 +212,14 @@ function Entrance() {
 
       <div className="entrance__card" aria-hidden="true">
         <p className="eyebrow">Burgertone presents</p>
-        <p className="entrance__card-line"><span>Real beef.</span></p>
+        <p className="entrance__card-line"><span>Grass-fed beef.</span></p>
         <p className="entrance__card-line"><span><em>Real burgers.</em></span></p>
       </div>
 
       <div className="entrance__copy">
         <div className="entrance__chrome entrance__reveal">
           <span>Burlington · Open now</span>
-          <span>Toronto · Coming soon</span>
+          <span>Toronto · Open now</span>
           {HERO_LOOP.video && (
             <button type="button" onClick={toggleLoop} aria-label={paused ? 'Play background video' : 'Pause background video'}>
               <LoopIcon paused={paused} />{paused ? 'Play' : 'Pause'}
@@ -232,10 +232,52 @@ function Entrance() {
             <h1 id="entrance-title" className="entrance__reveal">Turn up<br /><em>the flavour.</em></h1>
           </div>
           <div className="entrance__aside entrance__reveal">
-            <p>Fresh Angus, hand-cut fries and good music—open in Burlington and coming soon to Toronto.</p>
+            <p>Grass-fed halal beef, hand-cut fries and good music—now open in Burlington and Toronto.</p>
             <div className="entrance__actions"><OrderLink /><a className="button button--ghost" href="/menu">View menu</a></div>
           </div>
         </div>
+      </div>
+    </section>
+  )
+}
+
+// Record-label seal with the beef claims running round the edge (decorative; the same facts are in the copy).
+function GrassFedSeal() {
+  return (
+    <div className="seal" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <defs><path id="seal-ring" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0" /></defs>
+        <text><textPath href="#seal-ring" textLength="462" lengthAdjust="spacing">GRASS-FED BEEF · HALAL · GROUND DAILY · </textPath></text>
+      </svg>
+      <span>Grass<br />fed</span>
+    </div>
+  )
+}
+
+function Beef() {
+  return (
+    <section className="beef" id="beef" aria-labelledby="beef-title">
+      <div className="container beef__grid">
+        <header className="beef__head">
+          <p className="eyebrow">The source / What's in the patty</p>
+          <h2 id="beef-title">Grass-fed beef.<br /><em>Full volume.</em></h2>
+        </header>
+        <div className="beef__photo">
+          <FoodImage src="/assets/heavy-metal.jpg" sizes="(max-width: 900px) min(109vw, 533px), 1100px" alt="Heavy Metal Burger with three smashed grass-fed beef patties" loading="lazy" width="1920" height="1080" />
+          <GrassFedSeal />
+        </div>
+        <div className="beef__body">
+          <p>Every beef patty we smash starts with grass-fed, halal beef, ground fresh every day, then hits a hot griddle for that crispy, caramelised edge. Better beef. Louder flavour.</p>
+          <ol className="beef__points">
+            {BEEF_POINTS.map(([title, note], index) => (
+              <li key={title}><b>{String(index + 1).padStart(2, '0')}</b><strong>{title}</strong><span>{note}</span></li>
+            ))}
+          </ol>
+          <div className="beef__actions"><OrderLink>Taste the difference</OrderLink><a className="text-link" href="/menu">See the menu <ArrowIcon /></a></div>
+        </div>
+      </div>
+      <div className="beef__ticker" aria-hidden="true">
+        <div>{[0, 1].map((copy) => <span key={copy}>Grass-fed beef<i />Halal<i />Ground every day<i />Smash burgers<i /></span>)}</div>
       </div>
     </section>
   )
@@ -325,13 +367,13 @@ function Menu() {
 function Story() {
   return (
     <section className="brand-story" id="story" aria-labelledby="story-title">
-      <div className="brand-story__ticker" aria-hidden="true"><span>GOOD FOOD · GOOD MUSIC · FRESHLY HAND-CUT FRIES · BEEF GROUND EVERY DAY · </span><span>GOOD FOOD · GOOD MUSIC · FRESHLY HAND-CUT FRIES · BEEF GROUND EVERY DAY · </span></div>
+      <div className="brand-story__ticker" aria-hidden="true"><span>GOOD FOOD · GOOD MUSIC · GRASS-FED BEEF · FRESHLY HAND-CUT FRIES · </span><span>GOOD FOOD · GOOD MUSIC · GRASS-FED BEEF · FRESHLY HAND-CUT FRIES · </span></div>
       <div className="container brand-story__grid">
         <div className="brand-story__copy">
           <p className="eyebrow">Liner notes / Our story</p>
           <h1 id="story-title">Good food.<br /><em>Good music.</em></h1>
           <p>Burgertone was born out of a love for both good food and good music. Years of passion and love of food came together in hamburgers, smash burgers, cheesesteaks, hot dogs and refreshing shakes—all served with the grooviest of tunes.</p>
-          <p>Our fries are freshly hand-cut, our beef is halal and ground every day, and our in-house, one-of-a-kind ToneSauce ties it all together.</p>
+          <p>Our beef is grass-fed, halal and ground every day, our fries are freshly hand-cut, and our in-house, one-of-a-kind ToneSauce ties it all together.</p>
           <a className="text-link" href="/#location">Come orchestrate your burger <ArrowIcon /></a>
         </div>
         <div className="sleeve">
@@ -347,7 +389,7 @@ function Story() {
                 <li key={title}><b>{String(index + 1).padStart(2, '0')}</b><strong>{title}</strong><small>{note}</small></li>
               ))}
             </ol>
-            <footer><span>Burlington · Open now</span><span>Toronto · Coming soon</span></footer>
+            <footer><span>Burlington · Open now</span><span>Toronto · Open now</span></footer>
           </div>
         </div>
       </div>
@@ -356,8 +398,6 @@ function Story() {
 }
 
 function Location() {
-  const grandOpening = useOfferLive()
-
   return (
     <section className="visit" id="location" aria-labelledby="location-title">
       <div className="visit__backdrop">
@@ -375,15 +415,14 @@ function Location() {
         </header>
         <div className="visit__locations">
           <article className="visit-card visit-card--featured">
-            <header><span>01 / Featured location</span><b>Coming soon</b></header>
+            <header><span>01 / Toronto</span><b>Now open</b></header>
             <h3>Toronto</h3>
-            <p className="visit-card__note">Our second location, opening soon on Mt Pleasant Road.</p>
+            <p className="visit-card__note">Our newest location, on Mt Pleasant Road.</p>
             <address>505 Mt Pleasant Rd<br />Toronto, ON M4S 2L9</address>
             <a className="visit-card__phone" href="tel:+14164856608"><PhoneIcon />(416) 485-6608</a>
             <div className="visit-card__hours">
               <h4>Hours</h4>
               <dl>{groupHours(HOURS.toronto).map(([days, time]) => <div key={days}><dt>{days}</dt><dd>{time}</dd></div>)}</dl>
-              {grandOpening && <p className="visit-card__special">Grand opening Fri, Oct 30: 4 PM – 10 PM</p>}
             </div>
             <div className="visit-card__actions"><a className="button button--ghost" href="https://maps.google.com/?q=505+Mt+Pleasant+Rd+Toronto+ON+M4S+2L9" target="_blank" rel="noopener noreferrer">Directions <ArrowIcon /></a><OrderLink location="toronto">Order Toronto pickup</OrderLink></div>
           </article>
@@ -417,7 +456,7 @@ function Footer() {
         <div className="footer__top"><BrandMark light /><OrderLink>Turn up the flavour</OrderLink></div>
         <div className="footer__bottom">
           <div>{NAV_ITEMS.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</div>
-          <p>Burlington open · Toronto coming soon</p>
+          <p>Open in Burlington &amp; Toronto</p>
           <p suppressHydrationWarning>© {new Date().getFullYear()} Burgertone</p>
         </div>
       </div>
@@ -528,7 +567,7 @@ export default function App({ page = 'home' }) {
     <>
       <Navigation page={page} offer={offer} />
       <main id="main" className={[page === 'home' ? '' : 'main--page', offer ? 'has-offer' : ''].join(' ').trim() || undefined}>
-        {page === 'home' && <><Entrance /><ProductStory /><Location /></>}
+        {page === 'home' && <><Entrance /><Beef /><ProductStory /><Location /></>}
         {page === 'menu' && <Menu />}
         {page === 'about' && <Story />}
         {page === 'feedback' && <Feedback />}

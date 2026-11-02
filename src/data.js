@@ -8,9 +8,9 @@ export const SITE_URL = 'https://burgertone.com'
 // Each page is pre-rendered to its own HTML file at build time (scripts/prerender.mjs). The paths keep the
 // old Wix site's URLs so existing Google rankings carry over.
 export const PAGES = {
-  home: { path: '/', title: 'Burgertone | Halal Smash Burgers in Burlington & Toronto', description: 'Fresh halal smash burgers, hand-cut fries, Philly cheesesteaks and signature shakes at Burgertone on Upper Middle Road in Burlington and Mt Pleasant Road in Toronto.' },
-  menu: { path: '/menu', title: 'Menu | Burgertone Burlington & Toronto', description: 'Smash burgers, chicken burgers, Philly cheesesteak, hot dogs, hand-cut fries, poutine and milkshakes. See the Burgertone Burlington and Toronto menus and order online.' },
-  about: { path: '/about', title: 'Our Story | Burgertone', description: 'Burgertone was born from a love of good food and good music: halal beef ground every day, freshly hand-cut fries and our one-of-a-kind ToneSauce.' },
+  home: { path: '/', title: 'Burgertone | Grass-Fed Halal Smash Burgers, Burlington & Toronto', description: 'Grass-fed halal smash burgers, hand-cut fries, Philly cheesesteaks and signature shakes at Burgertone on Upper Middle Road in Burlington and Mt Pleasant Road in Toronto.' },
+  menu: { path: '/menu', title: 'Menu | Burgertone Burlington & Toronto', description: 'Grass-fed beef smash burgers, chicken burgers, Philly cheesesteak, hot dogs, hand-cut fries, poutine and milkshakes. See the Burgertone Burlington and Toronto menus and order online.' },
+  about: { path: '/about', title: 'Our Story | Burgertone', description: 'Burgertone was born from a love of good food and good music: grass-fed halal beef ground every day, freshly hand-cut fries and our one-of-a-kind ToneSauce.' },
   feedback: { path: '/feedback', title: 'Feedback & Reviews | Burgertone', description: 'Tell us how we did. Leave a Google review for Burgertone Burlington or Burgertone Toronto.' },
   // Written as 404.html: Cloudflare serves it with a 404 status for any unknown URL (not indexed, no canonical).
   notFound: { path: '/404', title: 'Page not found | Burgertone', description: 'This page is not on the Burgertone setlist.' },
@@ -32,8 +32,8 @@ export const REVIEW_URLS = {
   toronto: 'https://g.page/r/CSzMTursQow2EAE/review',
 }
 
-// Toronto grand opening, Friday Oct 30 2026, special hours 4–10 PM. The "Free burgers" bar, popup and the
-// special-hours note on the Toronto card show until it ends (10 PM Toronto time).
+// Toronto grand opening, Friday Oct 30 2026, special hours 4–10 PM. The "Free burgers" bar and popup show
+// until it ends (10 PM Toronto time), then disappear on their own.
 export const OFFER = {
   image: '/assets/offer-toronto-grand-opening.webp',
   width: 1600,
@@ -56,8 +56,16 @@ export const HERO_LOOP = {
   poster: '/assets/hero-loop-poster.webp',
 }
 
+// The home page "What's in the patty" feature. Grass-fed is from the owners (Nov 2026); halal and ground daily
+// were already on the old site.
+export const BEEF_POINTS = [
+  ['Grass-fed', 'Better beef, bigger flavour'],
+  ['Halal', 'Every patty, both locations'],
+  ['Ground daily', 'Fresh, every single day'],
+]
+
 export const STORY_TRACKS = [
-  ['Halal beef', 'Ground fresh every day'],
+  ['Grass-fed beef', 'Halal, ground fresh every day'],
   ['Fries', 'Freshly hand-cut'],
   ['ToneSauce', 'Our one-of-a-kind house sauce'],
   ['Brioche buns', 'Toasted for every burger'],
@@ -82,6 +90,7 @@ export const MENUS = [
           { name: 'R&B', description: 'Philly cheesesteak with sautéed onions, mushrooms, jalapeño, mayo, and a choice of melted cheese or mozzarella cheese on a toasted bun.' },
           { name: 'Who Let The Dogs Out', description: 'A hot dog topped with toppings of your choice on a hot dog bun.' },
         ],
+        notes: ['Our beef is grass-fed and halal.'],
       },
       {
         category: 'Sides', number: '02',
@@ -130,7 +139,7 @@ export const MENUS = [
           { name: 'Rock', description: 'Double Beef Patty • Beef Bacon • Cheese • Mushrooms • Lettuce • Onion • Pickles • Tomato • Tone Sauce' },
           { name: 'Heavy Metal', description: 'Triple Beef Patty • Egg • Cheese • Grilled Mushrooms • Lettuce • Onion • Pickles • Tomato • Tone Sauce' },
         ],
-        notes: ['Customise any burger on request. All toppings available; some extras cost more.'],
+        notes: ['Every beef patty is grass-fed and halal.', 'Customise any burger on request. All toppings available; some extras cost more.'],
       },
       {
         category: 'Chicken & More', number: '02',
